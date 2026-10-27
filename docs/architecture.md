@@ -33,11 +33,12 @@ graph TD
 ```mermaid
 sequenceDiagram
     Agent->>hawk: hawk search "react hooks best practices"
+    Note over hawk: Wigolo MCP server already running (persistent)
     hawk->>Parser: parse query
     Parser->>Orchestrator: intent=lookup, depth=quick, platforms=[web]
     Orchestrator->>AdapterW: search(query, depth=ultra-fast)
     AdapterW->>wigolo: MCP: search({"query": "...", "search_depth": "ultra-fast"})
-    wigolo->>wigolo: check cache first
+    wigolo->>wigolo: check cache first (SQLite)
     wigolo->>Exa: web search (if cache miss)
     Exa-->>wigolo: results
     wigolo-->>AdapterW: ranked results + evidence
@@ -45,6 +46,38 @@ sequenceDiagram
     Orchestrator->>Orchestrator: format output
     Orchestrator-->>Agent: top 5 results with snippets
 ```
+
+**Latency:** Cache hit = ≤50ms (no network). Cache miss = depends on search engine (typically 100-500ms).
+
+## Multi-Platform Fan-Out Path
+
+When searching across multiple platforms, all searches run in parallel:
+
+```mermaid
+sequenceDiagram
+    Agent->>hawk: hawk search "react hooks" --platforms web,github,twitter
+    hawk->>Parser: parse query
+    Parser->>Orchestrator: intent=lookup, depth=quick, platforms=[web,github,twitter]
+    
+    par web search
+        Orchestrator->>AdapterW: search(query)
+        AdapterW->>wigolo: MCP: search({"query": "..."})
+        wigolo-->>AdapterW: web results
+    and github search
+        Orchestrator->>AdapterR: search("github", query)
+        AdapterR->>agent-reach: github search
+        agent-reach-->>AdapterR: github results
+    and twitter search
+        Orchestrator->>AdapterR: search("twitter", query)
+        AdapterR->>agent-reach: twitter search
+        agent-reach-->>AdapterR: twitter results
+    end
+    
+    Orchestrator->>Orchestrator: merge results (as they arrive)
+    Orchestrator-->>Agent: combined results from all platforms
+```
+
+**Latency:** Takes the time of the slowest platform, not the sum of all three.
 
 ## Multi-Source Research Path
 
@@ -173,7 +206,8 @@ trace:
 
 # Tool connection settings
 wigolo:
-  endpoint: "http://localhost:3000"  # or "auto" to start it
+  binary: "wigolo"          # path to wigolo binary or "auto"
+  mode: "persistent"        # persistent (default) or "spawn-per-call"
 agent_reach:
   binary: "agent-reach"
 imo_zuru:
