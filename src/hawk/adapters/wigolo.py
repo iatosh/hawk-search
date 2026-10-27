@@ -36,7 +36,7 @@ class WigoloAdapter(BaseAdapter):
         if self._process and self._process.returncode is None:
             return
         self._process = await asyncio.create_subprocess_exec(
-            self.binary, "serve",
+            self.binary,
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
@@ -60,6 +60,8 @@ class WigoloAdapter(BaseAdapter):
         while True:
             resp = await self._recv()
             if resp and resp.get("id") == 1:
+                if "error" in resp:
+                    raise RuntimeError(f"MCP initialize error: {resp['error']}")
                 break
 
     async def _send(self, msg: dict[str, Any]) -> None:
@@ -103,33 +105,55 @@ class WigoloAdapter(BaseAdapter):
     async def search(self, query: str, **kwargs: Any) -> SearchResponse:
         """Search via wigolo's search tool."""
         await self._start()
+        result = await self._call_tool("search", {
+            "query": query,
+            "search_depth": kwargs.get("depth", "quick"),
+        })
+        # Parse the MCP response: result.content is an array of content items
+        # Each item has type and text. The text is the JSON result from wigolo.
+        content = result.get("content", []) if result else []
+        # Find the first text content item
+        text_content = None
+        for item in content:
+            if item.get("type") == "text":
+                text_content = item.get("text", "")
+                break
+        if not text_content:
+            return SearchResponse(query=query, results=[], engine="wigolo")
+        # Parse the JSON result
         try:
-            result = await self._call_tool("search", {
-                "query": query,
-                "search_depth": kwargs.get("depth", "quick"),
-            })
-            # Parse wigolo's search result into our SearchResponse
-            # The exact format depends on wigolo's response structure
-            content = result.get("content", []) if result else []
-            results = []
-            for item in content:
-                if item.get("type") == "text":
-                    # Try to parse the text as JSON or extract info
-                    text = item.get("text", "")
-                    results.append(SearchResult(
-                        title=text[:100],
-                        url="",
-                        snippet=text[:200],
-                        source="wigolo",
-                    ))
+            data = json.loads(text_content)
+        except json.JSONDecodeError:
+            # If not valid JSON, treat the whole text as a single result
             return SearchResponse(
                 query=query,
-                results=results,
+                results=[SearchResult(
+                    title=text_content[:100],
+                    url="",
+                    snippet=text_content[:200],
+                    source="wigolo",
+                )],
                 engine="wigolo",
             )
-        finally:
-            # Keep the process alive for subsequent calls
-            pass
+        # data should have a "results" array
+        results = []
+        for item in data.get("results", []):
+            results.append(SearchResult(
+                title=item.get("title", ""),
+                url=item.get("url", ""),
+                snippet=item.get("snippet", ""),
+                source="wigolo",
+                metadata={
+                    "relevance_score": item.get("relevance_score"),
+                    "evidence_score": item.get("evidence_score"),
+                },
+            ))
+        return SearchResponse(
+            query=query,
+            results=results,
+            engine="wigolo",
+            metadata={"total": len(results)},
+        )
 
     async def close(self) -> None:
         """Shut down the MCP process."""
