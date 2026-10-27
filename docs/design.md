@@ -61,6 +61,13 @@ hawk watch remove <id>
 hawk sessions list
 hawk sessions show <id>
 hawk sessions export <id> --format markdown
+
+# Check environment
+hawk doctor
+
+# Check/install dependencies
+hawk setup --check
+hawk setup --install
 ```
 
 ## Adapter Layer

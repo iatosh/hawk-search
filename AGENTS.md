@@ -1,61 +1,48 @@
-# AI Agent Guidelines
+# AGENTS.md — hawk-search Development Workflow
 
-These rules apply to all AI coding agents working in this repository.
+## Core Principle: Design Review Before Implementation
 
-## Before You Start
+Before starting implementation on any issue or feature:
 
-1. Read `CONTRIBUTING.md` for the development workflow.
-2. Read `docs/design.md` for the architecture.
-3. Check the issue tracker for the issue you're working on.
+1. **Present the design** — Show the user the design document or specific
+   design decision that needs agreement.
+2. **Grill session** — Let the user question, challenge, and stress-test the
+   design. Use the `grill` skill if available, or ask pointed questions
+   yourself to probe for weaknesses.
+3. **Get explicit agreement** — Do not start coding until the user has
+   confirmed the design is acceptable.
+4. **Record decisions as ADRs** — Once agreed, write an Architecture Decision
+   Record in `docs/adr/` capturing the decision, rationale, and alternatives
+   considered.
+
+## What "Grill" Means
+
+The grill session should cover:
+- Is the approach the simplest that could possibly work?
+- What are the failure modes?
+- What assumptions are we making about dependencies?
+- What could go wrong that we haven't considered?
+- Are we solving the right problem?
+
+## When to Ask vs. When to Decide
+
+**Ask the user:**
+- Architecture-level decisions (tool choice, project structure)
+- Feature scope (what's in/out of a release)
+- Trade-offs between competing values (speed vs. safety, simplicity vs. power)
+- Any decision that would be expensive to reverse
+
+**Decide autonomously (but record as ADR):**
+- Implementation details within an agreed design
+- Standard patterns and conventions
+- Minor API design choices
+- Testing strategy
 
 ## Issue Workflow
 
-When you complete an issue:
-1. Verify all "Done when" checkboxes are actually true in the code.
-2. Check that "Out of scope" items were not touched.
-3. Run the full test suite (`pytest`).
-4. Run linter (`ruff check src/hawk/ tests/`).
-5. Run formatter (`ruff format src/hawk/ tests/`).
-6. Create a branch named `issue-<number>-<slug>`.
-7. Commit with a conventional commit message.
-8. Open a PR with `Closes #<issue-number>` as the first line.
-
-## What NOT to Do
-
-- **Do not skip tests.** Every change to `src/hawk/` needs test coverage.
-- **Do not break backward compatibility** without a `feat!:` commit or a breaking change issue.
-- **Do not merge PRs yourself.** Create the PR and wait for human review.
-- **Do not release versions** without explicit user instruction.
-- **Do not modify `docs/design.md`** without a design discussion issue.
-- **Do not change adapter interfaces** (`src/hawk/adapters/base.py`) without updating all adapters.
-
-## Testing Requirements
-
-Before considering a task complete:
-
-```bash
-# All tests must pass
-pytest
-
-# No lint errors
-ruff check src/hawk/ tests/
-
-# Code is formatted
-ruff format --check src/hawk/ tests/
-```
-
-## Error Handling Rules
-
-hawk is an orchestrator — it must handle partial failures gracefully:
-
-1. If one backend is unavailable, try the next.
-2. Never silently return empty results — always report which backends were tried.
-3. Timeouts must be reasonable (default 30s for search, 60s for fetch).
-4. Errors must include enough context for debugging (which backend, which operation, what failed).
-
-## Security Rules
-
-- Never log credentials or authentication tokens.
-- Validate URLs before fetching (SSRF protection).
-- Use timeouts for all network operations.
-- Do not execute arbitrary code from fetched content.
+1. Read the issue and its dependencies
+2. If the issue has design implications, present the design first
+3. Get user agreement
+4. Implement
+5. Record any new decisions as ADRs
+6. Report completion with a demo

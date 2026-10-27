@@ -1,0 +1,30 @@
+[project]
+name = "hawk-search"
+version = "0.1.0"
+description = "Unified agent research tool: quick search, multi-source research, deep source tracing"
+requires-python = ">=3.11"
+dependencies = [
+    "typer>=0.12.0",
+    "pyyaml>=6.0",
+    "httpx>=0.27.0",
+    "rich>=13.0.0",
+    "pydantic>=2.0.0",
+    "mcp>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.4.0",
+]
+
+[project.scripts]
+hawk = "hawk.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hawk"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
