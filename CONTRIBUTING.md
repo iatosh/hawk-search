@@ -119,6 +119,17 @@ pip install -e ".[dev]"
 hawk --help
 ```
 
+Install the git hooks once per clone:
+
+```bash
+uv run pre-commit install --hook-type pre-commit --hook-type commit-msg --hook-type pre-push
+```
+
+The hooks in `.pre-commit-config.yaml` check:
+- **pre-commit**: `ruff check` and `ruff format --check` on staged Python files
+- **commit-msg**: the summary is a Conventional Commit
+- **pre-push**: the branch is `main` or `issue-<n>-<slug>`
+
 ## Code Style
 
 - Python 3.11+ type hints required
