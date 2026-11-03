@@ -70,16 +70,28 @@ Rules:
 
 ### 4. Pull Request
 
-PR body must start with:
+Use the template in `.github/pull_request_template.md`. GitHub fills it in
+when you open a PR.
+
+The PR body must start with one `Closes #<issue-number>` line per issue
+it closes. With `Closes #24, #25`, GitHub closes only #24, so write:
 
 ```
-Closes #<issue-number>
+Closes #24
+Closes #25
 ```
 
-Then optionally:
-- Summary of what changed and why
-- Test plan: how to verify
-- Design change note (if docs changed)
+Then write the sections:
+- **Summary**: what changed and why. If the PR closes several issues, write
+  one line per issue.
+- **Test plan**: commands run and their result
+- **Impact** (optional): behavior changes, breaking changes, new dependencies
+- **Design change** (optional): ADR or docs/spec files touched
+- **Deviations** (optional): differences from the issue or the agreed
+  design, such as scope that was added or dropped, Out of scope items that
+  were touched, or decisions made during implementation (link the ADR)
+
+Delete an optional section when it does not apply.
 
 Design changes (new terminology, architectural decisions) must be in the
 same PR as the code, not a follow-up.
