@@ -1,0 +1,64 @@
+name: Task
+description: One piece of work ending in one pull request. Research and decisions are Tasks too.
+labels: ["type:task"]
+body:
+  - type: markdown
+    attributes:
+      value: Set dependencies in the sidebar under Relationships (Blocked by), not in the text.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Pick the most specific one. Applied as a label.
+      options:
+        - area:core
+        - area:adapters
+        - area:cli
+        - area:config
+        - area:docs
+        - area:tests
+        - area:dev
+        - area:release
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: Applied as a label. Blockers decide order first; priority chooses among ready issues.
+      options:
+        - priority:medium
+        - priority:high
+        - priority:urgent
+        - priority:low
+      default: 0
+    validations:
+      required: true
+  - type: textarea
+    id: purpose
+    attributes:
+      label: Purpose
+      description: What changes and why. One or two sentences.
+    validations:
+      required: true
+  - type: textarea
+    id: done-when
+    attributes:
+      label: Done when
+      description: Checks that someone else can run. Leave nothing to judgment.
+      value: |
+        - [ ]
+    validations:
+      required: true
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope
+      description: What this task must not touch, even if it looks related. Write "Nothing else" if none.
+    validations:
+      required: true
+  - type: textarea
+    id: design-references
+    attributes:
+      label: Design references
+      description: Full links to docs on main (ADRs, docs/spec).

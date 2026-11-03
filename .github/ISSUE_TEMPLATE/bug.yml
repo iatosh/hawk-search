@@ -1,0 +1,76 @@
+name: Bug
+description: Something hawk does wrong.
+labels: ["type:bug"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Pick the most specific one. Applied as a label.
+      options:
+        - area:core
+        - area:adapters
+        - area:cli
+        - area:config
+        - area:docs
+        - area:tests
+        - area:dev
+        - area:release
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: Applied as a label. Blockers decide order first; priority chooses among ready issues.
+      options:
+        - priority:medium
+        - priority:high
+        - priority:urgent
+        - priority:low
+      default: 0
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What is wrong, expected vs actual, in one or two sentences.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction Steps
+      value: |
+        1.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: Quote the shortest decisive error line.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      value: |
+        - OS:
+        - Python version:
+        - hawk version/commit:
+    validations:
+      required: true
+  - type: textarea
+    id: related
+    attributes:
+      label: Related
+      description: Issues, PRs, ADRs, code locations.
